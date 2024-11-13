@@ -4,8 +4,8 @@ set -e  # Exit on any error
 
 TARGET_EDGE_FOLDER="/var/coda"
 TEMP_FOLDER="/tmp"
-TARGET_ARCH="arm7" # amd64, arm64, arm5, arm7
-TARGET_COMPANY_ID="telus"
+TARGET_ARCH="amd64" # amd64, arm64, arm5, arm7
+DEFAULT_COMPANY_ID="telus"
 INSTALLER_FILES_URL="http://oxygen-coda-installer-files.s3-website-us-east-1.amazonaws.com"
 
 # Function to log success messages
@@ -22,6 +22,11 @@ handle_error() {
 echo "================================================="
 echo "== Installing EdgeIQ Coda to the Oxygen Device =="
 echo "================================================="
+
+# Prompt for Company ID
+echo "Enter Company ID (default: ${DEFAULT_COMPANY_ID}):"
+read -r company_id
+company_id=${company_id:-$DEFAULT_COMPANY_ID}
 
 # Create temp folder if it doesn't exist
 [ -d "${TEMP_FOLDER}" ] || mkdir -p "${TEMP_FOLDER}" || handle_error "Failed to create temp folder"
@@ -54,8 +59,8 @@ else
 fi
 
 # Configure company ID
-if sed -i "s/\(\"company_id\": *\)\"[^\"]*\"/\1\"${TARGET_COMPANY_ID}\"/" "${TARGET_EDGE_FOLDER}/conf/bootstrap.json"; then
-    log_success "Company ID configured to ${TARGET_COMPANY_ID}"
+if sed -i "s/\(\"company_id\": *\)\"[^\"]*\"/\1\"${company_id}\"/" "${TARGET_EDGE_FOLDER}/conf/bootstrap.json"; then
+    log_success "Company ID configured to ${company_id}"
 else
     handle_error "Failed to configure company ID"
 fi

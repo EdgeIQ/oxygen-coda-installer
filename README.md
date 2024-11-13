@@ -32,17 +32,13 @@ Execute the following command on the device via SSH:
 
 ```bash
 curl --retry 10 -o ./uninstall.sh http://oxygen-coda-installer-files.s3-website-us-east-1.amazonaws.com/uninstall.sh && chmod +x ./uninstall.sh && sh ./uninstall.sh
-
 ```
 
 ### What can be improved?
 
 * Automatically detect the architecture of the device
-* Ask for company ID as part of installation process
 * Ask for unique device identifier as part of installation process
-* Setup a cron job to restart the Coda service on a regular interval
-* Setup a cron job to cleanup the log files on a regular interval
-* Investigate automatic restart of Coda crash for some reason
+* Scripts reliability improvements
 
 ### Publishing Coda Installer Files for Oxygen Devices
 
