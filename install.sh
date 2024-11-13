@@ -101,6 +101,9 @@ fi
 echo "========================================"
 echo "== EdgeIQ Coda Installed Successfully =="
 echo "========================================"
-
 echo "You can find your Device Unique ID (client id) in the coda logs, using following command:"
 echo "tail -n 1000 -f /var/log/coda.log"
+echo "========================================"
+echo "You can check the status of the Coda service using following command:"
+echo "sudo /etc/init.d/coda status"
+echo "========================================"
