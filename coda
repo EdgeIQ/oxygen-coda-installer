@@ -1,0 +1,139 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          coda
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start coda at boot time
+# Description:       Enable service provided by coda.
+### END INIT INFO
+
+# Configuration
+DAEMON_NAME="coda"
+DAEMON_PATH="/var/coda"
+DAEMON="${DAEMON_PATH}/edge"
+LOG_FILE="/var/log/${DAEMON_NAME}.log"
+PID_FILE="/var/run/${DAEMON_NAME}.pid"
+
+# Check if daemon exists
+if [ ! -x "$DAEMON" ]; then
+    echo "Error: $DAEMON not found or not executable"
+    exit 5
+fi
+
+# Check if process is running
+check_running() {
+    [ -f "$PID_FILE" ] && ps -p $(cat "$PID_FILE" 2>/dev/null) >/dev/null 2>&1
+}
+
+# Function to start the daemon
+do_start() {
+    echo "Starting ${DAEMON_NAME}..."
+    if check_running; then
+        echo "${DAEMON_NAME} is already running."
+        return 1
+    fi
+    
+    # Start daemon and ensure it's running
+    cd "$DAEMON_PATH" || exit 1
+    nohup "$DAEMON" >> "$LOG_FILE" 2>&1 &
+    PID=$!
+    
+    # Wait briefly to ensure process started
+    sleep 1
+    if ps -p $PID >/dev/null 2>&1; then
+        echo $PID > "$PID_FILE"
+        chmod 644 "$PID_FILE"
+        echo "${DAEMON_NAME} started successfully."
+        return 0
+    else
+        echo "Error: ${DAEMON_NAME} failed to start"
+        return 1
+    fi
+}
+
+# Function to stop the daemon
+do_stop() {
+    echo "Stopping ${DAEMON_NAME}..."
+    if [ -f "$PID_FILE" ]; then
+        PID=$(cat "$PID_FILE")
+        if kill -15 "$PID" 2>/dev/null; then
+            # Wait up to 10 seconds for process to stop
+            for i in $(seq 1 10); do
+                if ! ps -p "$PID" >/dev/null 2>&1; then
+                    break
+                fi
+                sleep 1
+            done
+            # Force kill if still running
+            if ps -p "$PID" >/dev/null 2>&1; then
+                kill -9 "$PID" 2>/dev/null
+            fi
+        fi
+        rm -f "$PID_FILE"
+        echo "${DAEMON_NAME} stopped."
+    else
+        echo "${DAEMON_NAME} is not running."
+    fi
+}
+
+# Function to restart the daemon
+do_restart() {
+    do_stop
+    sleep 2
+    do_start
+}
+
+# Function to check the status of the daemon
+do_status() {
+    if [ -f "$PID_FILE" ]; then
+        PID=$(cat "$PID_FILE")
+        if ps -p "$PID" >/dev/null 2>&1; then
+            echo "${DAEMON_NAME} is running (PID: $PID)"
+            return 0
+        else
+            echo "${DAEMON_NAME} is not running, but pid file exists."
+            return 1
+        fi
+    else
+        echo "${DAEMON_NAME} is not running."
+        return 3
+    fi
+}
+
+# Function to rotate logs
+do_rotate_logs() {
+    echo "Rotating logs..."
+    if [ -f "$LOG_FILE" ]; then
+        mv "$LOG_FILE" "${LOG_FILE}.$(date +%Y%m%d%H%M%S)"
+    fi
+    touch "$LOG_FILE"
+    chmod 644 "$LOG_FILE"
+    echo "Logs rotated."
+}
+
+# Handle command line arguments
+case "$1" in
+    start)
+        do_start
+        ;;
+    stop)
+        do_stop
+        ;;
+    restart)
+        do_restart
+        ;;
+    status)
+        do_status
+        ;;
+    rotate-logs)
+        do_rotate_logs
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status|rotate-logs}"
+        exit 1
+        ;;
+esac
+
+exit 0
