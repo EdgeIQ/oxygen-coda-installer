@@ -2,7 +2,7 @@
 
 This repository contains one-liner scripts to install EdgeIQ Coda on the Cypress Oxygen 3 and Oxygen 3 Plus devices. 
 
-[Oxygen 3 User Manual](./docs/Oxygen-3-Manual-v1.9.pdf)
+[Oxygen 3 User Manual](https://www.cypress.bc.ca/wp-content/uploads/2021/11/Oxygen-3-Manual-v1.9.pdf)
 
 There are couple things to keep in mind:
 
