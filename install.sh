@@ -4,7 +4,7 @@ set -e  # Exit on any error
 
 TARGET_EDGE_FOLDER="/var/coda"
 TEMP_FOLDER="/tmp"
-TARGET_ARCH="amd64" # amd64, arm64, arm5, arm7
+TARGET_ARCH="arm7" # amd64, arm64, arm5, arm7
 DEFAULT_COMPANY_ID="telus"
 INSTALLER_FILES_URL="http://oxygen-coda-installer-files.s3-website-us-east-1.amazonaws.com"
 
