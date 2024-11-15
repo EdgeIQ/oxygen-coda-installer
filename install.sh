@@ -32,7 +32,8 @@ company_id=${company_id:-$DEFAULT_COMPANY_ID}
 [ -d "${TEMP_FOLDER}" ] || mkdir -p "${TEMP_FOLDER}" || handle_error "Failed to create temp folder"
 
 # Download and install CA certificates
-if curl --retry 10 --fail -o /etc/ssl/certs/ca-certificates.pem "${INSTALLER_FILES_URL}/cacert-2024-09-24.pem"; then
+
+if mkdir -p /etc/ssl/certs && curl --retry 10 --fail -o /etc/ssl/certs/ca-certificates.crt "${INSTALLER_FILES_URL}/cacert-2024-09-24.pem"; then
     log_success "CA certificates downloaded & installed"
 else
     handle_error "Failed to download CA certificates"
@@ -94,13 +95,18 @@ else
     handle_error "Failed to start Coda"
 fi
 
-# Add coda service to startup via cron
-if (crontab -l 2>/dev/null | grep -q "@reboot /etc/init.d/coda restart"); then
-    log_success "Coda startup cron job already exists"
+# Add coda service to startup via /etc/init.d/start
+if [ -f /etc/init.d/start ]; then
+    if grep -q "/etc/init.d/coda start" /etc/init.d/start; then
+        log_success "Coda startup command already exists in /etc/init.d/start"
+    else
+        echo "" >> /etc/init.d/start && \
+        echo "/etc/init.d/coda start" >> /etc/init.d/start && \
+        log_success "Added coda startup command to /etc/init.d/start" || \
+        handle_error "Failed to add coda startup command to /etc/init.d/start"
+    fi
 else
-    (crontab -l 2>/dev/null; echo "@reboot /etc/init.d/coda restart") | crontab - && \
-    log_success "Added coda startup cron job" || \
-    handle_error "Failed to add coda startup cron job"
+    log_success "/etc/init.d/start does not exist, skipping startup command addition"
 fi
 
 echo "========================================"

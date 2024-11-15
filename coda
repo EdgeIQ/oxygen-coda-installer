@@ -14,7 +14,7 @@ DAEMON_NAME="coda"
 DAEMON_PATH="/var/coda"
 DAEMON="${DAEMON_PATH}/edge"
 LOG_FILE="/var/log/${DAEMON_NAME}.log"
-PID_FILE="/var/run/${DAEMON_NAME}.pid"
+PID_FILE="/tmp/${DAEMON_NAME}.pid"
 
 # Check if daemon exists
 if [ ! -x "$DAEMON" ]; then
@@ -35,9 +35,9 @@ do_start() {
         return 1
     fi
     
-    # Start daemon and ensure it's running
+    # Start daemon with output redirection
     cd "$DAEMON_PATH" || exit 1
-    nohup "$DAEMON" >> "$LOG_FILE" 2>&1 &
+    "$DAEMON" >> "$LOG_FILE" 2>&1 &
     PID=$!
     
     # Wait briefly to ensure process started
